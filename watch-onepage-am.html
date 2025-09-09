@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>18+ Video Access</title>
+  <style>
+    :root { --bg:#0f1115; --card:#151821; --muted:#9aa3b2; --accent:#3b82f6; --border:#232838; }
+    *{box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#e8e8e8;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0;padding:24px}
+    .card{max-width:700px;width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 6px 30px rgba(0,0,0,.35)}
+    h1{font-size:20px;margin:0 0 6px}
+    p{opacity:.95;line-height:1.5;margin:0 0 10px}
+    .handle{font-size:12px;color:#9aa3b2;margin:0 0 12px}
+    .handle a{color:#9aa3b2;text-decoration:none}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+    .btn{display:inline-block;padding:12px 18px;border-radius:12px;border:0;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+    .btn.offer{background:#ef4444}
+    .timer{margin-top:10px;font-size:12px;color:#9aa3b2}
+    .fine{font-size:12px;color:#9aa3b2;margin-top:12px}
+    .badge{display:inline-block;font-size:11px;padding:4px 8px;border:1px solid var(--border);border-radius:999px;color:#9aa3b2;margin-bottom:10px}
+    .preview{aspect-ratio:16/9;background:#0b0d12;border:1px dashed var(--border);border-radius:12px;margin:12px 0 8px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px;overflow:hidden}
+    .preview img{max-width:100%;max-height:100%;display:block}
+    .banner-wrap{margin-top:14px;display:flex;justify-content:center}
+    .banner-box{width:300px;height:250px}
+    @media (max-width:360px){.banner-wrap{transform:scale(.9);transform-origin:top center}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">18+ content • adults only</div>
+    <h1 id="title">Confirm 18+ to watch</h1>
+    <div class="handle">channel: <a href="https://t.me/massimo_desu" target="_blank" rel="noopener">@massimo_desu</a></div>
+
+    <div class="preview" id="preview">Video preview / cover</div>
+    <p class="fine" id="note">Enjoy your time watching, dear anime connoisseurs, stay with us🫦</p>
+
+    <div class="actions">
+      <button class="btn" id="watchBtn">Watch FULL</button>
+      <!-- опціональна кнопка-оффер -->
+      <a class="btn offer" id="offerBtn" href="#" style="display:none" target="_blank" rel="noopener">Extra 18+</a>
+    </div>
+
+    <div class="timer" id="status"></div>
+
+    <!-- 300x250 банер (сюди ВСТАВИТИ AdMaven банерний код) -->
+    <div class="banner-wrap">
+      <div class="banner-box">
+        <!-- ===== ADMAVEN_BANNER_300x250: paste code below ===== -->
+        <!-- (поки без коду – сторінка працюватиме і без банера) -->
+        <!-- ================================================ -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // hash: #v=<VIDEO_URL>|img=<IMAGE_URL>|delay=7|t=<TITLE>|btn=<TEXT>|note=<TEXT>|offer=<URL>|offerText=<TEXT>
+    function parseHash(){const raw=(location.hash||"").replace(/^#/,"");const out={};if(!raw)return out;raw.split("|").forEach(p=>{const i=p.indexOf("=");if(i>0){out[p.slice(0,i).trim()]=decodeURIComponent(p.slice(i+1).trim());}});return out;}
+    const p=parseHash();
+    const V=p.v||""; const IMG=p.img||""; const D=Math.max(0,parseInt(p.delay||"7",10));
+    const T=p.t||""; const BTN=p.btn||"Watch FULL"; const NOTE=p.note||"Enjoy your time watching, dear anime connoisseurs, stay with us🫦";
+    if(T) document.getElementById("title").textContent=T;
+    document.getElementById("watchBtn").textContent=BTN;
+    document.getElementById("note").textContent=NOTE;
+    if(IMG){const im=new Image(); im.onload=()=>{const b=document.getElementById("preview"); b.innerHTML=""; b.appendChild(im)}; im.alt="Cover"; im.src=IMG;}
+
+    // оффер (опційно з хеша)
+    if(p.offer){const ob=document.getElementById("offerBtn"); ob.href=p.offer; if(p.offerText) ob.textContent=p.offerText; ob.style.display='inline-block';}
+
+    const statusEl=document.getElementById("status"), btn=document.getElementById("watchBtn");
+    if(!V){btn.disabled=true; statusEl.textContent="Error: missing video URL (v= in the hash).";}
+
+    function tryRedirect(url){
+      try{window.location.assign(url);}catch(e){}
+      try{window.location.replace(url);}catch(e){}
+      try{window.top.location.assign(url);}catch(e){}
+      try{const a=document.createElement('a');a.href=url;a.target="_self";a.rel="noopener";document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),50);}catch(e){}
+      try{const f=document.createElement('form');f.method='GET';f.action=url;document.body.appendChild(f);f.submit();setTimeout(()=>f.remove(),50);}catch(e){}
+      try{window.open(url,'_self');}catch(e){}
+    }
+
+    document.getElementById("watchBtn").addEventListener('click',()=>{
+      try{ localStorage.setItem('vgate_next', JSON.stringify({url: V, ts: Date.now()})); }catch(e){}
+      const end=Date.now()+D*1000;
+      (function tick(){
+        const leftMs=end-Date.now(), left=Math.max(0,Math.ceil(leftMs/1000));
+        statusEl.textContent="Preparing your video… "+left+"s";
+        if(leftMs<=0){ tryRedirect(V); }
+        else setTimeout(tick,250);
+      })();
+      setTimeout(()=>tryRedirect(V),(D+0.5)*1000);
+      setTimeout(()=>tryRedirect(V),(D+2)*1000);
+      setTimeout(()=>tryRedirect(V),(D+4)*1000);
+    });
+  </script>
+
+  <!-- ===== ADMAVEN_IM: paste AdMaven Instant Message / Interstitial tag below ===== -->
+  <!-- (цей код рендерить повноекранний IM після кліку на кнопку) -->
+  <!-- ============================================================================ -->
+
+</body>
+</html>
