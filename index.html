@@ -1,0 +1,20 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Continue…</title>
+<script>
+try {
+  const raw = localStorage.getItem('vgate_next');
+  if (raw) {
+    const obj = JSON.parse(raw);
+    if (obj && obj.url && Date.now() - (obj.ts || 0) < 2*60*1000) {
+      location.replace(obj.url);
+    } else {
+      location.replace('/am-gate/watch-onepage-am.html');
+    }
+  } else {
+    location.replace('/am-gate/watch-onepage-am.html');
+  }
+} catch(e) {
+  location.replace('/am-gate/watch-onepage-am.html');
+}
+</script>
